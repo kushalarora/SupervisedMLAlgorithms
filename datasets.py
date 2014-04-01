@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.cross_validation import train_test_split
 from math import floor
 import os
 class Datasets:
@@ -35,7 +36,7 @@ class Datasets:
     def _close_file(self, file):
         file.close()
 
-    def load_ocr_train(self):
+    def load_ocr_train(self, train_size=30):
         """ Load Optical Character Recoginition Test dataset
             >>> dt = Datasets()
             >>> dt.load_ocr_train()
@@ -49,10 +50,10 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return (np.array(x_matrix), np.array(y_vector))
+        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
 
 
-    def load_ocr_test(self):
+    def load_ocr_test(self, train_size=30):
         """ Load Optical Character Recoginition Train dataset
             >>> dt = Datasets()
             >>> dt.load_ocr_test()
@@ -66,10 +67,10 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return (np.array(x_matrix), np.array(y_vector))
+        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
 
 
-    def load_breast_cancer(self):
+    def load_breast_cancer(self, train_size=30):
         """ Load Winsconsin Breast Cancer dataset
             >>> dt = Datasets()
             >>> dt.load_breast_cancer()
@@ -83,9 +84,9 @@ class Datasets:
             x_matrix.append(tuple([-1 if value == '?' else int(value) for value in values[1:-1]]))
 
         self._close_file(file)
-        return (np.array(x_matrix), np.array(y_vector))
+        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
 
-    def load_higgs(self, percentage=30):
+    def load_higgs(self, train_size=30, percentage_data=30):
         """ Load HIGGS dataset
             >>> dt = Datasets()
             >>> dt.load_higgs(percentage=30)
@@ -115,6 +116,4 @@ class Datasets:
             count += 1
 
         self._close_file(file)
-        return (np.array(x_matrix), np.array(y_vector))
-
-
+        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
