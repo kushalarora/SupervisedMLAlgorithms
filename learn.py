@@ -1,9 +1,22 @@
-#from metrics import *
+from metrics import Metrics
 from itertools import product
+from datasets import Datasets
+from constants import BINARY_CLASSIFIER
+
 class Learn:
-    def __init__(self, parameters={}, cross_validate=False):
+    def _check_type(self, metric):
+        return self.type & 1 << metric
+
+    def __init__(self, parameters={}, cross_validate=False, allowed_metrics=[], type_masks=[], test={}):
+        type = 1
         self.parameters = parameters
         self.cross_validate = cross_validate
+        self.allowed_metrics = allowed_metrics
+        self.metrics = Metrics(type_masks)
+        for mask in type_masks:
+            type = type | mask
+        self.type = type
+        self.test = test
 
     def _cross_validate(self):
         """
@@ -47,9 +60,33 @@ class Learn:
             self.parameters = self._cross_validate()
         return self._train_routine(train_X, train_Y)
 
-    def test(self, test_data=[]):
+    def predict(self, test_data=[]):
         raise NotImplementedError
 
-    def evaulate(self, test_data=[], metrics=[]):
-        test_Y = self.test(test_data)
+    def evaulate(self, test_data, orig_Y, metrics=[]):
+        import pdb;pdb.set_trace()
+        results = []
+        test_Y = self.predict(test_data)
+        for metric in metrics:
+            assert metric in self.allowed_metrics, "%s not a valid metric for %s" % (metric, self.__class__.__name__)
+            metric_function = getattr(self.metrics, metric)
+            results.append((metric, metric_function(orig_Y, test_Y)))
+        return results
+
+    def test_model(self):
+        dt = Datasets()
+        dataset = None
+        if self._check_type(BINARY_CLASSIFIER):
+            dataset = dt.load_iris()
+        else:
+            dataset = dt.load_digits()
+
+        assert dataset
+
+        self._train_routine(dataset[0], dataset[2])
+        results = self.evaulate(dataset[1], dataset[3], self.test["metrics"])
+
+        for tup in results:
+            print "%s:" % tup[0]
+            print tup[1]
 

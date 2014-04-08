@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cross_validation import train_test_split
 from math import floor
+from sklearn.datasets import load_iris, load_digits
 import os
 class Datasets:
     DATA_FILES = {
@@ -35,6 +36,10 @@ class Datasets:
 
     def _close_file(self, file):
         file.close()
+
+    def load_dataset(self, dataset, train_size):
+        assert dataset in self.dataset_dirs, "Dataset: %s not known" % dataset
+        return getattr(self, "load_%s" % dataset)(train_size)
 
     def load_ocr_train(self, train_size=30):
         """ Load Optical Character Recoginition Test dataset
@@ -117,3 +122,11 @@ class Datasets:
 
         self._close_file(file)
         return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
+
+    def load_iris(self, train_size=30):
+        x = load_iris()
+        return train_test_split(x.data, x.target, train_size=train_size, random_state=42)
+
+    def load_digits(self, train_size=30):
+        x = load_digits()
+        return train_test_split(x.data, x.target, train_size=train_size, random_state=42)
