@@ -2,7 +2,7 @@ from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 from learn import Learn
 
-class KNeighborLearning(Learn):
+class KNearestNeighbors(Learn):
     def __init__(self, **kwargs):
         Learn.__init__(self, **kwargs)
         self.knn = KNeighborsClassifier()

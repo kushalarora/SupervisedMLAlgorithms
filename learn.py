@@ -63,8 +63,7 @@ class Learn:
     def predict(self, test_data=[]):
         raise NotImplementedError
 
-    def evaulate(self, test_data, orig_Y, metrics=[]):
-        import pdb;pdb.set_trace()
+    def evaluate(self, test_data, orig_Y, metrics=[]):
         results = []
         test_Y = self.predict(test_data)
         for metric in metrics:

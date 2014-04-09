@@ -1,0 +1,9 @@
+{
+    "algorithms": {
+        "k_nearest_neighbors": {
+            "cross_validate": false,
+            "allowed_metrics": ["accuracy_score"]
+        }
+    },
+    "datasets": ["iris"]
+}

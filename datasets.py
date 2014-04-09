@@ -55,7 +55,7 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
+        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
 
     def load_ocr_test(self, train_size=30):
@@ -72,7 +72,7 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
+        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
 
     def load_breast_cancer(self, train_size=30):
@@ -89,7 +89,7 @@ class Datasets:
             x_matrix.append(tuple([-1 if value == '?' else int(value) for value in values[1:-1]]))
 
         self._close_file(file)
-        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
+        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
     def load_higgs(self, train_size=30, percentage_data=30):
         """ Load HIGGS dataset
@@ -121,12 +121,12 @@ class Datasets:
             count += 1
 
         self._close_file(file)
-        return train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42)
+        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
     def load_iris(self, train_size=30):
         x = load_iris()
-        return train_test_split(x.data, x.target, train_size=train_size, random_state=42)
+        return tuple(train_test_split(x.data, x.target, train_size=train_size, random_state=42))
 
     def load_digits(self, train_size=30):
         x = load_digits()
-        return train_test_split(x.data, x.target, train_size=train_size, random_state=42)
+        return tuple(train_test_split(x.data, x.target, train_size=train_size, random_state=42))
