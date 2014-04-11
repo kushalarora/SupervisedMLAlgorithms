@@ -86,18 +86,18 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--algorithms", type=str, nargs='+',
             help="""Algorithm to run(ones mentioned in classification.json):\n
                         values: all or specific one from json file\n
-                """)
+                """, default=['all'])
 
 
     parser.add_argument("-d", "--datasets", type=str, nargs='+',
             help="""Datasets to run(mentioned in classification.json):\n
                         values: all or specific one from json file\n
-                """)
+                """, default=['all'])
 
     parser.add_argument("-m", "--metrics", type=str, nargs='+',
             help="""Metrics to evaluate(mentioned in classification.json):\n
                         values:: all allowed for a given algorithm(mentioned in json file) or specific ones\n
-                """)
+                """, default=['all'])
 
     parser.add_argument("-o", "--output", type=str,
             help="""Output Pattern values: [pdf(Generate a pdf report), print(Print to screen), dump(Dump in text file ./output.txt)

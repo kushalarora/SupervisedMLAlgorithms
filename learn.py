@@ -7,7 +7,7 @@ class Learn:
     def _check_type(self, metric):
         return self.type & 1 << metric
 
-    def __init__(self, parameters={}, cross_validate=False, allowed_metrics=[], type_masks=[], test={}):
+    def __init__(self, parameters={}, cross_validate=False, allowed_metrics=[], type_masks=[]):
         type = 1
         self.parameters = parameters
         self.cross_validate = cross_validate
@@ -16,7 +16,6 @@ class Learn:
         for mask in type_masks:
             type = type | mask
         self.type = type
-        self.test = test
 
     def _cross_validate(self):
         """
@@ -83,7 +82,7 @@ class Learn:
         assert dataset
 
         self._train_routine(dataset[0], dataset[2])
-        results = self.evaulate(dataset[1], dataset[3], self.test["metrics"])
+        results = self.evaluate(dataset[1], dataset[3], self.allowed_metrics)
 
         for tup in results:
             print "%s:" % tup[0]

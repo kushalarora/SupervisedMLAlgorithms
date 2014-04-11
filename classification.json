@@ -2,8 +2,12 @@
     "algorithms": {
         "k_nearest_neighbors": {
             "cross_validate": false,
+            "allowed_metrics": ["accuracy_score", "precision_recall_fscore"],
+            "parameters": {}
+        },
+        "support_vector_machine": {
             "allowed_metrics": ["accuracy_score"]
         }
     },
-    "datasets": ["iris"]
+    "datasets": ["iris", "ocr_train", "ocr_test"]
 }

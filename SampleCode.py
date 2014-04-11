@@ -45,9 +45,6 @@ for i in x:
 from sklearn.svm import NuSVC
 clf = NuSVC()
 clf.fit(z[1:200], y[1:200])
-NuSVC(cache_size=200, coef0=0.0, degree=3, gamma=0.0, kernel='rbf',
-      max_iter=-1, nu=0.5, probability=False, random_state=None,
-      shrinking=True, tol=0.001, verbose=False)
 valid = clf.predict(z[201:698])      
 for i in valid:
     if i != y[count+201]:
