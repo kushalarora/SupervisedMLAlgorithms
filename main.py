@@ -1,10 +1,16 @@
 from datasets import Datasets
+from tabulate import tabulate
 import argparse
 import importlib
-import json
 import logging
+import yaml
 import os
 import sys
+import importlib
+import print_score
+
+
+dt = Datasets()
 
 def generate_pdf(metric_tuples):
     pass
@@ -12,12 +18,12 @@ def generate_pdf(metric_tuples):
 def dump_results(metric_tuples):
     pass
 
-def print_results(algorithm, metric_tuples):
-    print "Algorithm => %s:" % algorithm
-    for (metric, result) in metric_tuples:
-        print "\tMetric => %s:" % metric
-        print "\t\t%s" % result
-
+def print_results(algorithm, dataset, metric_tuples):
+    #print "\nFor Algorithm::\t%s" % algorithm
+    #print "For Dataset::\t%s\n" % dataset
+        for met_tup in metric_tuples:
+            func = getattr(print_score, "print_%s" % met_tup[0])
+            func(algorithm, dataset, met_tup[1])
 
 def _get_algorithm_class(algorithm_name):
     module = importlib.import_module("%s" % algorithm_name)
@@ -48,28 +54,29 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
 
         learn_class = _get_algorithm_class(algorithm)
         learn = learn_class(**algo_conf)
-
+        learn._set_cross_validation(conf.get("cv_method", None), conf.get("cv_metric", None), conf.get("cv_params", None))
         results = []
-        dt = Datasets()
         for dataset in datasets:
             if dataset not in conf["datasets"]:
                 logging.error("Dataset %s not found" % dataset)
                 sys.exit(0)
 
 
-            (x_train, x_test, y_train, y_test) = _load_dataset(dataset, dt)
+            data = _load_dataset(dataset, dt)
+            if learn.check_type(data["type"]):
+                eval_metrics = []
+                if metrics:
+                    eval_metrics.extend(metrics)
+                else:
+                    eval_metrics.extend(algo_conf["allowed_metrics"])
 
-            if not metrics:
-                metrics = algo_conf["allowed_metrics"]
+                learn.train(data["x_train"], data["y_train"])
+                result_tups = learn.evaluate(data["x_test"], data["y_test"], eval_metrics)
 
-            learn.train(x_train, y_train)
-            results = []
-            metric_tups = learn.evaluate(x_test, y_test, metrics)
-
-            if output == "print":
-                print_results(algorithm, metric_tups)
-            else:
-                results.append((algorithm, metric_tups))
+                if output == "print":
+                    print_results(algorithm, dataset, result_tups)
+                else:
+                    results.append((algorithm, dataset, result_tups))
 
     if output == "pdf":
         generate_pdf(results)
@@ -112,7 +119,7 @@ if __name__ == "__main__":
     logging.info("Main::Output Mode: %s" % args.output)
 
     conf_file = open(os.path.abspath(args.config))
-    conf_json = json.load(conf_file)
+    conf_json = yaml.load(conf_file)
 
     algorithms = []
     datasets = []

@@ -1,13 +1,26 @@
 {
     "algorithms": {
         "k_nearest_neighbors": {
-            "cross_validate": false,
-            "allowed_metrics": ["accuracy_score", "precision_recall_fscore"],
-            "parameters": {}
+            "cross_validate": true,
+            "allowed_metrics": ["accuracy_score"],
+            "parameters": {
+                "p": [1,2,3,10000],
+                "n_neighbors": [2,3,5, 8]
+            },
+            "type_masks": [1]
         },
         "support_vector_machine": {
-            "allowed_metrics": ["accuracy_score"]
+            "allowed_metrics": ["accuracy_score"],
+            "cross_validate": true,
+            "parameters": {
+                "C": [0.001, 1, 20, 1000],
+                "kernel": ["rbf", "poly", "sigmoid", "linear"],
+                "degree":[2,6,20]
+            }
         }
     },
-    "datasets": ["iris", "ocr_train", "ocr_test"]
+    "datasets": ["iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
+    "cv_method": "KFold",
+    "cv_metric": "accuracy",
+    "cv_params": [5]
 }

@@ -2,30 +2,39 @@ from metrics import Metrics
 from itertools import product
 from datasets import Datasets
 from constants import BINARY_CLASSIFIER
+from sklearn import cross_validation
+from print_score import print_cv_scores
+import logging
+
 
 class Learn:
-    def _check_type(self, metric):
-        return self.type & 1 << metric
+    def check_type(self, mask):
+        return self.type & mask
 
-    def __init__(self, parameters={}, cross_validate=False, allowed_metrics=[], type_masks=[]):
+    def __init__(self, parameters={}, cross_validate=False,
+                    allowed_metrics=[], type_masks=[]):
         type = 1
         self.parameters = parameters
         self.cross_validate = cross_validate
         self.allowed_metrics = allowed_metrics
         self.metrics = Metrics(type_masks)
+        self.algo = None
         for mask in type_masks:
-            type = type | mask
+            type = type | 1 << mask
         self.type = type
+        self.cv = None
 
-    def _cross_validate(self):
+    def set_parameters(self, parameters={}):
+        pass
+
+    def _cross_validate(self, train_X, train_Y):
         """
         """
         params = self.parameters
         # Example {'a': 1, 'b': [1,2,3], 'c': [1,2])}
 
-        self.parameters = {}
         lists = []
-        for param, value in params.iteritems:
+        for param, value in params.iteritems():
             if type(value) != list:
                 # Values not to be modified
                 # example param = 'a', value = 1
@@ -33,7 +42,7 @@ class Learn:
             else:
                 # Example = 'b' : [1,2,3]
                 # output would be [('b',1), ('b',2), ('b',3)]]
-                lists.append(product(param, value))
+                lists.append(product([param], value))
 
         # to pass list as *args
         # SO/3941517
@@ -45,18 +54,36 @@ class Learn:
         # ]
 
         tup_tuples = product(*lists)
-        self._cross_validate_routine(tup_tuples)
-        # TODO(Kushal): Incomplete. Think and finish.
+        cv_results = []
+        for tup in tup_tuples:
+            self.set_parameters(dict(tup))
+            scores = cross_validation.cross_val_score(self.algo,
+                                            train_X, train_Y,
+                                            cv=self.cv_method(len(train_Y), *self.cv_params),
+                                            scoring=self.cv_metric)
+            cv_results.append((tup, self.cv_metric, scores.mean(), scores.std()))
+        print_cv_scores(cv_results)
+        max_tup = max(cv_results, key=lambda x:x[2])
+        opt_parameters = dict(max_tup[0])
+        logging.info("Choosing following parameters after validation %s" % opt_parameters)
+        return opt_parameters
 
-    def _cross_validate_routine(self, tup_tuples):
-        raise NotImplementedError
+
+    def _set_cross_validation(self, method_name='KFold', metric='accuracy', parameters=[5]):
+        if not self.cross_validate:
+            return
+        self.cv_params = parameters
+        self.cv_metric = metric
+        self.cv_method = getattr(cross_validation, method_name)
 
     def _train_routine(self, train_X, train_Y):
         raise NotImplementedError
 
     def train(self, train_X, train_Y):
+        opt_parameters = self.parameters
         if self.cross_validate:
-            self.parameters = self._cross_validate()
+            opt_parameters = self._cross_validate(train_X, train_Y)
+        self.set_parameters(opt_parameters)
         return self._train_routine(train_X, train_Y)
 
     def predict(self, test_data=[]):
@@ -70,21 +97,4 @@ class Learn:
             metric_function = getattr(self.metrics, metric)
             results.append((metric, metric_function(orig_Y, test_Y)))
         return results
-
-    def test_model(self):
-        dt = Datasets()
-        dataset = None
-        if self._check_type(BINARY_CLASSIFIER):
-            dataset = dt.load_iris()
-        else:
-            dataset = dt.load_digits()
-
-        assert dataset
-
-        self._train_routine(dataset[0], dataset[2])
-        results = self.evaluate(dataset[1], dataset[3], self.allowed_metrics)
-
-        for tup in results:
-            print "%s:" % tup[0]
-            print tup[1]
 

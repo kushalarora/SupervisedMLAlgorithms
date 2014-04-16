@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.cross_validation import train_test_split
 from math import floor
 from sklearn.datasets import load_iris, load_digits
+from constants import *
 import os
 class Datasets:
     DATA_FILES = {
@@ -41,8 +42,20 @@ class Datasets:
         assert dataset in self.dataset_dirs, "Dataset: %s not known" % dataset
         return getattr(self, "load_%s" % dataset)(train_size)
 
+    def _build_output(self, type, data_tuple):
+        output = {
+                'type': type,
+                'x_train': data_tuple[0],
+                'x_test': data_tuple[1],
+                'y_train': data_tuple[2],
+                'y_test': data_tuple[3]
+                }
+        return output
+
+
     def load_ocr_train(self, train_size=30):
         """ Load Optical Character Recoginition Test dataset
+            MultiClass Dataset, UniLabel
             >>> dt = Datasets()
             >>> dt.load_ocr_train()
         """
@@ -55,8 +68,7 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
-
+        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
     def load_ocr_test(self, train_size=30):
         """ Load Optical Character Recoginition Train dataset
@@ -72,7 +84,8 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+
+        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
 
     def load_breast_cancer(self, train_size=30):
@@ -89,7 +102,8 @@ class Datasets:
             x_matrix.append(tuple([-1 if value == '?' else int(value) for value in values[1:-1]]))
 
         self._close_file(file)
-        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+
+        return self._build_output(BINARY_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
     def load_higgs(self, train_size=30, percentage_data=30):
         """ Load HIGGS dataset
@@ -121,12 +135,14 @@ class Datasets:
             count += 1
 
         self._close_file(file)
-        return tuple(train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
 
     def load_iris(self, train_size=30):
         x = load_iris()
-        return tuple(train_test_split(x.data, x.target, train_size=train_size, random_state=42))
+        result = [BINARY_DATA]
+        return self._build_output(BINARY_DATA, train_test_split(x.data, x.target, train_size=train_size, random_state=42))
+
 
     def load_digits(self, train_size=30):
         x = load_digits()
-        return tuple(train_test_split(x.data, x.target, train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, train_test_split(x.data, x.target, train_size=train_size, random_state=42))
