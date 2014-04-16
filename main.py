@@ -1,5 +1,4 @@
 from datasets import Datasets
-from tabulate import tabulate
 import argparse
 import importlib
 import logging
