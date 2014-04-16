@@ -55,6 +55,10 @@ class Learn:
 
         tup_tuples = product(*lists)
         cv_results = []
+
+        if not self.cross_validate:
+            return dict(tup_tuples.next())
+
         for tup in tup_tuples:
             self.set_parameters(dict(tup))
             scores = cross_validation.cross_val_score(self.algo,
@@ -80,9 +84,7 @@ class Learn:
         raise NotImplementedError
 
     def train(self, train_X, train_Y):
-        opt_parameters = self.parameters
-        if self.cross_validate:
-            opt_parameters = self._cross_validate(train_X, train_Y)
+        opt_parameters = self._cross_validate(train_X, train_Y)
         self.set_parameters(opt_parameters)
         return self._train_routine(train_X, train_Y)
 

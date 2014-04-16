@@ -1,7 +1,7 @@
 {
     "algorithms": {
         "k_nearest_neighbors": {
-            "cross_validate": true,
+            "cross_validate": false,
             "allowed_metrics": ["accuracy_score"],
             "parameters": {
                 "p": [1,2,3,10000],
@@ -11,7 +11,7 @@
         },
         "support_vector_machine": {
             "allowed_metrics": ["accuracy_score"],
-            "cross_validate": true,
+            "cross_validate": false,
             "parameters": {
                 "C": [0.001, 1, 20, 1000],
                 "kernel": ["rbf", "poly", "sigmoid", "linear"],
