@@ -9,6 +9,22 @@
             },
             "type_masks": [1]
         },
+        "random_forest":{
+            "cross_validate": false,
+            "allowed_metrics": ["accuracy_score"],
+            "parameters": {
+                "n_estimators": [10,50,100]
+            },
+            "type_masks": [1]
+        },
+        "decision_tree":{
+            "cross_validate": false,
+            "allowed_metrics": ["accuracy_score"],
+            "parameters": {
+                "min_samples_split": [1,5]
+            },
+            "type_masks": [1]
+        },
         "support_vector_machine": {
             "allowed_metrics": ["accuracy_score"],
             "cross_validate": false,
