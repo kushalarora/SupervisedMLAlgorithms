@@ -17,6 +17,14 @@
             },
             "type_masks": [1]
         },
+        "gradient_boosting":{
+            "cross_validate": false,
+            "allowed_metrics": ["accuracy_score"],
+            "parameters": {
+                "n_estimators": [10,50,100]
+            },
+            "type_masks": [1]
+        },
         "decision_tree":{
             "cross_validate": false,
             "allowed_metrics": ["accuracy_score"],
