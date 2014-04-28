@@ -17,6 +17,15 @@
             },
             "type_masks": [1]
         },
+        "multilayer_perceptron":{
+            "cross_validate": false,
+            "allowed_metrics": ["accuracy_score"],
+            "parameters":{
+                "n_hidden": [100,200], 
+                "lr": [0.1]
+            },
+            "type_masks": [1]
+        },
         "gradient_boosting":{
             "cross_validate": false,
             "allowed_metrics": ["accuracy_score"],
