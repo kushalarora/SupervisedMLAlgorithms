@@ -21,7 +21,7 @@
             "cross_validate": false,
             "allowed_metrics": ["accuracy_score"],
             "parameters":{
-                "n_hidden": [100,200], 
+                "n_hidden": [100,200],
                 "lr": [0.1]
             },
             "type_masks": [1]
@@ -55,5 +55,6 @@
     "datasets": ["iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
     "cv_method": "KFold",
     "cv_metric": "accuracy",
-    "cv_params": [5]
+    "cv_params": [5],
+    "training_size": [10, 30, 50]
 }

@@ -5,6 +5,7 @@ from sklearn.datasets import load_iris, load_digits
 from constants import *
 import os
 class Datasets:
+    AVAILABLE_DATA = ['ocr_test', 'ocr_train', 'breast_cancer', 'higgs', 'iris', 'digits']
     DATA_FILES = {
             'ocr_test': 'optdigits.tes',
             'ocr_train': 'optdigits.tra',
@@ -17,8 +18,9 @@ class Datasets:
                             'ocr_train': '../OCR',
                             'breast_cancer': '../Wisconsin',
                             'higgs': '../Higgs'
-                                    }):
+                                    }, training_size=40):
         self.dataset_dirs = dataset_dirs
+        self.train_size = training_size
 
     def _load_file(self, dataset=None, path=None):
         assert dataset, "No dataset specified"
@@ -42,13 +44,18 @@ class Datasets:
         assert dataset in self.dataset_dirs, "Dataset: %s not known" % dataset
         return getattr(self, "load_%s" % dataset)(train_size)
 
-    def _build_output(self, type, data_tuple):
+    def _build_output(self, type, X, Y, train_size=None):
+        train_size = train_size if train_size != None else self.train_size
+        (x_train, x_test, y_train, y_test) = train_test_split(np.array(X),
+                                                    np.array(Y),
+                                                    train_size=train_size,
+                                                    random_state=42)
         output = {
                 'type': type,
-                'x_train': data_tuple[0],
-                'x_test': data_tuple[1],
-                'y_train': data_tuple[2],
-                'y_test': data_tuple[3]
+                'x_train': x_train,
+                'x_test': x_test,
+                'y_train': y_train,
+                'y_test': y_test
                 }
         return output
 
@@ -68,7 +75,7 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
 
     def load_ocr_test(self, train_size=30):
         """ Load Optical Character Recoginition Train dataset
@@ -85,7 +92,7 @@ class Datasets:
 
         self._close_file(file)
 
-        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
 
 
     def load_breast_cancer(self, train_size=30):
@@ -103,7 +110,7 @@ class Datasets:
 
         self._close_file(file)
 
-        return self._build_output(BINARY_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+        return self._build_output(BINARY_DATA,x_matrix, y_vector)
 
     def load_higgs(self, train_size=30, percentage_data=30):
         """ Load HIGGS dataset
@@ -135,14 +142,13 @@ class Datasets:
             count += 1
 
         self._close_file(file)
-        return self._build_output(MULTICLASS_DATA, train_test_split(np.array(x_matrix), np.array(y_vector), train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
 
     def load_iris(self, train_size=30):
         x = load_iris()
-        result = [BINARY_DATA]
-        return self._build_output(BINARY_DATA, train_test_split(x.data, x.target, train_size=train_size, random_state=42))
+        return self._build_output(BINARY_DATA, x.data, x.target)
 
 
     def load_digits(self, train_size=30):
         x = load_digits()
-        return self._build_output(MULTICLASS_DATA, train_test_split(x.data, x.target, train_size=train_size, random_state=42))
+        return self._build_output(MULTICLASS_DATA, x.data, x.target)

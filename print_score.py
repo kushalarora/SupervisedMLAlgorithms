@@ -1,7 +1,7 @@
 from prettytable import PrettyTable
-def print_accuracy_score(algorithm, dataset, score):
-    table = PrettyTable(["algorithm", "datset","metric", "score"])
-    table.add_row([algorithm, dataset, "accuracy_score", score])
+def print_accuracy_score(training_size, algorithm, dataset, score):
+    table = PrettyTable(["training_size", "algorithm", "datset","metric", "score"])
+    table.add_row([training_size, algorithm, dataset, "accuracy_score", score])
     print table
 
 def print_precision_recall_fscore(algorithm, dataset, score):

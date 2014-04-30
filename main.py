@@ -17,12 +17,12 @@ def generate_pdf(metric_tuples):
 def dump_results(metric_tuples):
     pass
 
-def print_results(algorithm, dataset, metric_tuples):
+def print_results(training_size, algorithm, dataset, metric_tuples):
     #print "\nFor Algorithm::\t%s" % algorithm
     #print "For Dataset::\t%s\n" % dataset
         for met_tup in metric_tuples:
             func = getattr(print_score, "print_%s" % met_tup[0])
-            func(algorithm, dataset, met_tup[1])
+            func(training_size, algorithm, dataset, met_tup[1])
 
 def _get_algorithm_class(algorithm_name):
     module = importlib.import_module("%s" % algorithm_name)
@@ -56,31 +56,34 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         learn._set_cross_validation(conf.get("cv_method", None), conf.get("cv_metric", None), conf.get("cv_params", None))
         results = []
         for dataset in datasets:
-            if dataset not in conf["datasets"]:
-                logging.error("Dataset %s not found" % dataset)
-                sys.exit(0)
+            for training_size in conf.get("training_size", [40]):
+
+                dts = Datasets(training_size=training_size)
+                if dataset not in conf["datasets"]:
+                    logging.error("Dataset %s not found" % dataset)
+                    sys.exit(0)
 
 
-            data = _load_dataset(dataset, dt)
-            if learn.check_type(data["type"]):
-                eval_metrics = []
-                if metrics:
-                    eval_metrics.extend(metrics)
-                else:
-                    eval_metrics.extend(algo_conf["allowed_metrics"])
+                data = _load_dataset(dataset, dts)
+                if learn.check_type(data["type"]):
+                    eval_metrics = []
+                    if metrics:
+                        eval_metrics.extend(metrics)
+                    else:
+                        eval_metrics.extend(algo_conf["allowed_metrics"])
 
-                learn.train(data["x_train"], data["y_train"])
-                result_tups = learn.evaluate(data["x_test"], data["y_test"], eval_metrics)
+                    learn.train(data["x_train"], data["y_train"])
+                    result_tups = learn.evaluate(data["x_test"], data["y_test"], eval_metrics)
 
-                if output == "print":
-                    print_results(algorithm, dataset, result_tups)
-                else:
-                    results.append((algorithm, dataset, result_tups))
+                    if output == "print":
+                        print_results(training_size, algorithm, dataset, result_tups)
+                    else:
+                        results.append((algorithm, dataset, result_tups))
 
-    if output == "pdf":
-        generate_pdf(results)
-    elif output == "dump_text":
-        dump_results(results)
+        if output == "pdf":
+            generate_pdf(results)
+        elif output == "dump_text":
+            dump_results(results)
 
 if __name__ == "__main__":
 
