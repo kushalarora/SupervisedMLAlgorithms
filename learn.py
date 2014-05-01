@@ -167,3 +167,6 @@ class Learn:
         ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'),
                   size=15, horizontalalignment='right')
         figure.savefig(filename)
+
+    def get_name(self):
+        return self.__class__.__name__
