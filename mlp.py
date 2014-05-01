@@ -1,5 +1,6 @@
 import numpy as np
 import warnings
+from NeuralNetwork import NeuralNetwork
 
 from itertools import cycle, izip
 
@@ -8,6 +9,9 @@ from sklearn.utils import shuffle
 from sklearn.base import BaseEstimator
 from sklearn.base import ClassifierMixin
 from sklearn.preprocessing import LabelBinarizer
+from datasets import Datasets
+
+dt = Datasets()
 
 def _softmax(x):
     np.exp(x, x)
@@ -144,28 +148,15 @@ class BaseMLP(BaseEstimator):
 class MLPClassifier(BaseMLP, ClassifierMixin):
     """ Multilayer Perceptron Classifier.
 
-    Uses a neural network with one hidden layer.
+    Uses a neural network with more than one hidden layer.
 
-
-    Parameters
-    ----------
-
-
-    Attributes
-    ----------
-
-    Notes
-    -----
-
-
-    References
     ----------"""
     def __init__(self, n_hidden=200, lr=0.1, l2decay=0, loss='cross_entropy',
             output_layer='softmax', batch_size=100, verbose=0):
         super(MLPClassifier, self).__init__(n_hidden, lr, l2decay, loss,
                 output_layer, batch_size, verbose)
 
-    def fit(self, X, y, max_epochs=10, shuffle_data=False):
+    def fit(self, X, y, max_epochs=100, shuffle_data=False):
         self.lb = LabelBinarizer()
         one_hot_labels = self.lb.fit_transform(y)
         super(MLPClassifier, self).fit(
@@ -180,14 +171,121 @@ class MLPClassifier(BaseMLP, ClassifierMixin):
 
 def test_classification():
     from sklearn.datasets import load_digits
+    from sklearn.datasets import load_iris
+    from sklearn.cross_validation import train_test_split
+    from sklearn.preprocessing import LabelBinarizer
+    from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
     digits = load_digits()
-    X, y = digits.data, digits.target
+    iris = load_iris()
+    breast = dt.load_breast_cancer()
+    ocr = dt.load_ocr_train()
+    ocr1 = dt.load_ocr_test()
+    X = digits.data
+    y = digits.target
+    X -= X.min()     # normalize the values to bring them into the range 0-1
+    X /= X.max()
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    labels_train = LabelBinarizer().fit_transform(y_train)
+    labels_test = LabelBinarizer().fit_transform(y_test)
+    print 'digits dataset'
+    print 'MLP performance:'
     mlp = MLPClassifier()
-    mlp.fit(X, y)
-    training_score = mlp.score(X, y)
-    print("training accuracy: %f" % training_score)
-    assert(training_score > .95)
-
-
+    mlp.fit(X_train,labels_train)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = mlp.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print confusion_matrix(y_test,predictions)
+    print classification_report(y_test,predictions)
+    print 'Perceptron performance'
+    nn = NeuralNetwork([64,100,10],'tanh')
+    nn.fit(X_train,labels_train,epochs=100)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = nn.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print confusion_matrix(y_test,predictions)
+    print classification_report(y_test,predictions)
+    #################################################
+    X = iris.data
+    y = iris.target
+    #X -= X.min()     # normalize the values to bring them into the range 0-1
+    #X /= X.max()
+    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    labels_train = LabelBinarizer().fit_transform(y_train)
+    labels_test = LabelBinarizer().fit_transform(y_test)
+    print 'Iris dataset'
+    print 'MLP performance'
+    mlp = MLPClassifier()
+    mlp.fit(X_train,labels_train)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = mlp.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print confusion_matrix(y_test,predictions)
+    print classification_report(y_test,predictions)
+    print 'Perceptron performance'
+    nn = NeuralNetwork([64,100,10],'tanh')
+    nn.fit(X_train,labels_train,epochs=100)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = nn.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print confusion_matrix(y_test,predictions)
+    print classification_report(y_test,predictions)
+    ####################################################
+    X_train = breast['x_train']
+    y_train = breast['y_train']
+    X_test = breast['x_test']
+    y_test = breast['y_test']
+    X_train -= X_train.min()     # normalize the values to bring them into the range 0-1
+    X_train /= X_train.max()
+    labels_train = LabelBinarizer().fit_transform(y_train)
+    labels_test = LabelBinarizer().fit_transform(y_test)
+    print 'Breast cancer dataset'
+    print 'MLP performance'
+    mlp = MLPClassifier()
+    mlp.fit(X_train,labels_train)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = mlp.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print accuracy_score(labels_test,predictions)
+    #print confusion_matrix(labels_test,predictions)
+    print classification_report(labels_test,predictions)
+    print 'Perceptron performance'
+    nn = NeuralNetwork([64,100,10],'tanh')
+    nn.fit(X_train,labels_train,epochs=100)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = nn.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print confusion_matrix(labels_test,predictions)
+    print classification_report(labels_test,predictions)
+    ####################################################
+    '''
+    X_train = ocr['x_train']
+    y_train = ocr['y_train']
+    X_test = ocr1['x_test']
+    y_test = ocr1['y_test']
+    X_train -= X_train.min()     # normalize the values to bring them into the range 0-1
+    X_train /= X_train.max()
+    X_test -= X_test.min()     # normalize the values to bring them into the range 0-1
+    X_test /= X_test.max()
+    labels_train = LabelBinarizer().fit_transform(y_train)
+    labels_test = LabelBinarizer().fit_transform(y_test)
+    mlp = MLPClassifier()
+    mlp.fit(X_train,labels_train)
+    predictions = []
+    for i in range(X_test.shape[0]):
+        o = mlp.predict(X_test[i] )
+        predictions.append(np.argmax(o))
+    print 'OCR dataset'
+    #print predictions
+    print accuracy_score(y_test,predictions)
+    #print confusion_matrix(labels_test,predictions)
+    print classification_report(y_test,predictions)
+    #######################################################
+    '''
 if __name__ == "__main__":
     test_classification()
