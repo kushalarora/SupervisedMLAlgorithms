@@ -159,10 +159,12 @@ class Learn:
         ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm, s=30,
                    alpha=0.8)
 
-        ax.set_xlim(xx.min(), xx.max())
-        ax.set_ylim(yy.min(), yy.max())
-        ax.set_xticks(())
-        ax.set_yticks(())
+        ax.set_xticks(np.linspace(x_min, x_max, 10))
+        ax.set_yticks(np.linspace(y_min, y_max, 10))
+
+        ax0.set_xticks(np.linspace(x_min, x_max, 10))
+        ax0.set_yticks(np.linspace(y_min, y_max, 10))
+
         ax.set_title(label)
         ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'),
                   size=15, horizontalalignment='right')

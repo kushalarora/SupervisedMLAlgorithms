@@ -53,12 +53,16 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
 
         os.mkdir(tmp_plot_dir)
 
+        orig_data_dir = os.path.join(tmp_plot_dir, "original")
+        os.mkdir(orig_data_dir)
         for dataset in datasets:
-            plot_data(os.path.join(tmp_plot_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
+            plot_data(os.path.join(orig_data_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
 
 
     for algorithm in algorithms:
 
+        algo_dir = os.path.join(tmp_plot_dir, algorithm)
+        os.mkdir(algo_dir)
         algo_conf = conf["algorithms"].get(algorithm, None)
 
         if not algo_conf:
@@ -69,14 +73,16 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         learn = learn_class(**algo_conf)
         learn._set_cross_validation(conf.get("cv_method", None), conf.get("cv_metric", None), conf.get("cv_params", None))
         results = []
-        for training_size in conf.get("training_size", [0.40]):
-            for dataset in datasets:
-                if dataset not in conf["datasets"]:
-                    logging.error("Dataset %s not found" % dataset)
-                    sys.exit(0)
+        for dataset in datasets:
+            if dataset not in conf["datasets"]:
+                logging.error("Dataset %s not found" % dataset)
+                sys.exit(0)
 
+            dataset_dir = os.path.join(algo_dir, dataset)
+            os.mkdir(dataset_dir)
+
+            for training_size in conf.get("training_size", [0.40]):
                 data = dts.load_dataset(dataset, training_size)
-
                 if learn.check_type(data["type"]):
                     eval_metrics = []
                     if metrics:
@@ -93,7 +99,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                         results.append((algorithm, dataset, result_tups))
 
                     if conf.get("plot_data", False):
-                        output_path = os.path.join(tmp_plot_dir, "%s_%s_size_%d" % (dataset, algorithm, training_size * 100))
+                        output_path = os.path.join(dataset_dir, "%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
                         output_label = "%s-%s-size-%s" % (dataset, algorithm, training_size)
                         learn.plot_results(output_path, output_label, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
         if output == "pdf":

@@ -39,10 +39,10 @@ def plot_2d(filename, label, X, Y, Z=None):
     pl.scatter(X[:, 0], X[:, 1], c=Y, s=60, cmap=cmap)
     pl.set_xlim(xx.min(), xx.max())
     pl.set_ylim(yy.min(), yy.max())
-    pl.set_xticks(np.linspace(xx.min(), 0.5, xx.max(), endpoint=True))
-    pl.set_yticks(np.linspace(xx.min(), 0.5, xx.max(), endpoint=True))
+    pl.set_xticks(np.linspace(x_min, x_max, 10))
+    pl.set_yticks(np.linspace(y_min, y_max, 10))
     pl.set_title(label)
-    figure.savefig(filename, dpi=200)
+    figure.savefig(filename)
 
 if __name__ == "__main__":
     plot_data("/tmp/test_plot", "Label:Iris", "iris")
