@@ -13,12 +13,12 @@ class Datasets:
             'higgs': 'HIGGS.csv'
             }
 
-    def __init__(self, dataset_dirs={
+    def __init__(self, training_size=0.40, dataset_dirs={
                             'ocr_test': '../OCR',
                             'ocr_train': '../OCR',
                             'breast_cancer': '../Wisconsin',
                             'higgs': '../Higgs'
-                                    }, training_size=40):
+                                    }):
         self.dataset_dirs = dataset_dirs
         self.train_size = training_size
 
@@ -40,8 +40,8 @@ class Datasets:
     def _close_file(self, file):
         file.close()
 
-    def load_dataset(self, dataset, train_size):
-        assert dataset in self.dataset_dirs, "Dataset: %s not known" % dataset
+    def load_dataset(self, dataset, train_size=None):
+        assert dataset in self.AVAILABLE_DATA, "Dataset: %s not known" % dataset
         return getattr(self, "load_%s" % dataset)(train_size)
 
     def _build_output(self, type, X, Y, train_size=None):
@@ -60,7 +60,7 @@ class Datasets:
         return output
 
 
-    def load_ocr_train(self, train_size=30):
+    def load_ocr_train(self, train_size=0.3):
         """ Load Optical Character Recoginition Test dataset
             MultiClass Dataset, UniLabel
             >>> dt = Datasets()
@@ -75,9 +75,9 @@ class Datasets:
             x_matrix.append(tuple([int(value) for value in values[:-1]]))
 
         self._close_file(file)
-        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector, train_size)
 
-    def load_ocr_test(self, train_size=30):
+    def load_ocr_test(self, train_size=0.3):
         """ Load Optical Character Recoginition Train dataset
             >>> dt = Datasets()
             >>> dt.load_ocr_test()
@@ -92,10 +92,10 @@ class Datasets:
 
         self._close_file(file)
 
-        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector, train_size)
 
 
-    def load_breast_cancer(self, train_size=30):
+    def load_breast_cancer(self, train_size=0.30):
         """ Load Winsconsin Breast Cancer dataset
             >>> dt = Datasets()
             >>> dt.load_breast_cancer()
@@ -110,12 +110,12 @@ class Datasets:
 
         self._close_file(file)
 
-        return self._build_output(BINARY_DATA,x_matrix, y_vector)
+        return self._build_output(BINARY_DATA,x_matrix, y_vector, train_size)
 
-    def load_higgs(self, train_size=30, percentage_data=30):
+    def load_higgs(self, train_size=0.3, percentage_data=0.3):
         """ Load HIGGS dataset
             >>> dt = Datasets()
-            >>> dt.load_higgs(percentage=30)
+            >>> dt.load_higgs(percentage=0.3)
         """
         file = self._load_file('higgs')
         size = 0
@@ -142,13 +142,14 @@ class Datasets:
             count += 1
 
         self._close_file(file)
-        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector)
+        return self._build_output(MULTICLASS_DATA, x_matrix, y_vector, train_size)
 
-    def load_iris(self, train_size=30):
+    def load_iris(self, train_size=0.3):
         x = load_iris()
-        return self._build_output(BINARY_DATA, x.data, x.target)
+        return self._build_output(MULTICLASS_DATA, x.data, x.target, train_size)
 
 
-    def load_digits(self, train_size=30):
+    def load_digits(self, train_size=0.3):
         x = load_digits()
-        return self._build_output(MULTICLASS_DATA, x.data, x.target)
+        return self._build_output(MULTICLASS_DATA, x.data, x.target, train_size)
+

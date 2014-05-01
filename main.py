@@ -7,10 +7,9 @@ import os
 import sys
 import importlib
 import print_score
-
-
+import shutil
+from plot import plot_data
 dt = Datasets()
-
 def generate_pdf(metric_tuples):
     pass
 
@@ -44,7 +43,22 @@ def _load_dataset(dataset, dt):
 
 
 def run_algorithms(algorithms, datasets, metrics, output, conf):
+    dts = Datasets()
+    if conf.get("plot_data", False):
+        plot_dir = conf.get("plot_dir", "../plots")
+
+        tmp_plot_dir = "/tmp/plots"
+        if os.path.exists(tmp_plot_dir):
+            shutil.rmtree(tmp_plot_dir)
+
+        os.mkdir(tmp_plot_dir)
+
+        for dataset in datasets:
+            plot_data(os.path.join(tmp_plot_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
+
+
     for algorithm in algorithms:
+
         algo_conf = conf["algorithms"].get(algorithm, None)
 
         if not algo_conf:
@@ -55,16 +69,15 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         learn = learn_class(**algo_conf)
         learn._set_cross_validation(conf.get("cv_method", None), conf.get("cv_metric", None), conf.get("cv_params", None))
         results = []
-        for dataset in datasets:
-            for training_size in conf.get("training_size", [40]):
+        for training_size in conf.get("training_size", [0.40]):
+            for dataset in datasets:
 
-                dts = Datasets(training_size=training_size)
                 if dataset not in conf["datasets"]:
                     logging.error("Dataset %s not found" % dataset)
                     sys.exit(0)
 
+                data = dts.load_dataset(dataset, training_size)
 
-                data = _load_dataset(dataset, dts)
                 if learn.check_type(data["type"]):
                     eval_metrics = []
                     if metrics:
@@ -80,11 +93,17 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                     else:
                         results.append((algorithm, dataset, result_tups))
 
+                    if conf.get("plot_data", False):
+                        output_path = os.path.join(tmp_plot_dir, "%s_%s_size_%d" % (dataset, algorithm, training_size))
+                        output_label = "%s-%s-size-%s" % (dataset, algorithm, training_size)
+                        learn.plot_results(output_path, output_label, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
         if output == "pdf":
             generate_pdf(results)
         elif output == "dump_text":
             dump_results(results)
-
+    if conf.get("plot_data", False):
+        shutil.rmtree(plot_dir)
+        shutil.move(tmp_plot_dir, plot_dir)
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()

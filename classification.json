@@ -1,7 +1,7 @@
 {
     "algorithms": {
         "k_nearest_neighbors": {
-            "cross_validate": false,
+            "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "parameters": {
                 "p": [1,2,3,10000],
@@ -10,7 +10,7 @@
             "type_masks": [1]
         },
         "random_forest":{
-            "cross_validate": false,
+            "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "parameters": {
                 "n_estimators": [10,50,100]
@@ -35,7 +35,7 @@
             "type_masks": [1]
         },
         "decision_tree":{
-            "cross_validate": false,
+            "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "parameters": {
                 "min_samples_split": [1,5]
@@ -44,17 +44,20 @@
         },
         "support_vector_machine": {
             "allowed_metrics": ["accuracy_score"],
-            "cross_validate": false,
+            "cross_validate": true,
             "parameters": {
                 "C": [0.001, 1, 20, 1000],
                 "kernel": ["rbf", "poly", "sigmoid", "linear"],
                 "degree":[2,6,20]
-            }
+            },
+            "type_masks": [1, 5]
         }
     },
     "datasets": ["iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
     "cv_method": "KFold",
     "cv_metric": "accuracy",
     "cv_params": [5],
-    "training_size": [10, 30, 50]
+    "plot_dir": "../plots",
+    "plot_data": false
+    "training_size": [0.10, 0.30, 0.50]
 }

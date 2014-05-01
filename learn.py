@@ -1,10 +1,15 @@
 from metrics import Metrics
 from itertools import product
 from datasets import Datasets
-from constants import BINARY_CLASSIFIER
+from constants import *
 from sklearn import cross_validation
 from print_score import print_cv_scores
+from reductions import PCA, LinearEmbedding
 import logging
+import pylab as pl
+import numpy as np
+from matplotlib.colors import ListedColormap
+from sklearn.cross_validation import train_test_split
 
 
 class Learn:
@@ -27,7 +32,7 @@ class Learn:
     def set_parameters(self, parameters={}):
         pass
 
-    def _cross_validate(self, train_X, train_Y):
+    def _cross_validate(self, train_X, train_Y, print_scores=True):
         """
         """
         params = self.parameters
@@ -66,7 +71,8 @@ class Learn:
                                             cv=self.cv_method(len(train_Y), *self.cv_params),
                                             scoring=self.cv_metric)
             cv_results.append((tup, self.cv_metric, scores.mean(), scores.std()))
-        print_cv_scores(cv_results)
+        if print_scores:
+            print_cv_scores(cv_results)
         max_tup = max(cv_results, key=lambda x:x[2])
         opt_parameters = dict(max_tup[0])
         logging.info("Choosing following parameters after validation %s" % opt_parameters)
@@ -83,7 +89,7 @@ class Learn:
     def _train_routine(self, train_X, train_Y):
         raise NotImplementedError
 
-    def train(self, train_X, train_Y):
+    def train(self, train_X, train_Y, print_cv_score=True):
         opt_parameters = self._cross_validate(train_X, train_Y)
         self.set_parameters(opt_parameters)
         return self._train_routine(train_X, train_Y)
@@ -100,3 +106,56 @@ class Learn:
             results.append((metric, metric_function(orig_Y, test_Y)))
         return results
 
+    def plot_results(self, filename, label, X_train, X_test, y_train, y_test):
+        X = np.concatenate((X_train, X_test))
+        Y = np.concatenate((y_train, y_test))
+        training_size = X_train.shape[0] * 100/X.shape[0]
+        X = LinearEmbedding(X, 2)
+        (X_train, X_test, y_train, y_test) = train_test_split(X, Y, train_size=training_size, random_state=42)
+
+        self.train(X_train, y_train)
+        score = self.algo.score(X_test, y_test)
+
+
+        assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
+        h = 0.02
+        figure = pl.figure(figsize=(10, 10))
+        ax = pl.subplot(1, 1, 1)
+        cm = pl.cm.RdBu
+        cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+
+        x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
+        y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                                      np.arange(y_min, y_max, h))
+        # Plot the decision boundary. For that, we will assign a color to each
+        # point in the mesh [x_min, m_max]x[y_min, y_max].
+        if self.check_type(ONE_VS_ALL):
+            Z = self.predict(np.c_[xx.ravel(), yy.ravel()])
+        elif hasattr(self.algo, "decision_function"):
+            Z = self.algo.decision_function(np.c_[xx.ravel(), yy.ravel()])
+        elif hasattr(self.algo, "predict_prob"):
+            Z = self.algo.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
+        else:
+            return
+
+        # Put the result into a color plot
+        Z = Z.reshape(xx.shape)
+
+        ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
+
+
+        # Plot also the training points
+        #ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm, s=30)
+        # and testing points
+        ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm, s=50,
+                   alpha=0.6)
+
+        ax.set_xlim(xx.min(), xx.max())
+        ax.set_ylim(yy.min(), yy.max())
+        ax.set_xticks(())
+        ax.set_yticks(())
+        ax.set_title(label)
+        ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'),
+                  size=15, horizontalalignment='right')
+        figure.savefig(filename)
