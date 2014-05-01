@@ -44,7 +44,8 @@ def _load_dataset(dataset, dt):
 
 def run_algorithms(algorithms, datasets, metrics, output, conf):
     dts = Datasets()
-    if conf.get("plot_data", False):
+    shall_plot = conf.get("plot_data")
+    if shall_plot:
         plot_dir = conf.get("plot_dir", "../plots")
 
         tmp_plot_dir = "/tmp/plots"
@@ -61,8 +62,10 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
 
     for algorithm in algorithms:
 
-        algo_dir = os.path.join(tmp_plot_dir, algorithm)
-        os.mkdir(algo_dir)
+        if shall_plot:
+            algo_dir = os.path.join(tmp_plot_dir, algorithm)
+            os.mkdir(algo_dir)
+
         algo_conf = conf["algorithms"].get(algorithm, None)
 
         if not algo_conf:
@@ -77,9 +80,9 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
             if dataset not in conf["datasets"]:
                 logging.error("Dataset %s not found" % dataset)
                 sys.exit(0)
-
-            dataset_dir = os.path.join(algo_dir, dataset)
-            os.mkdir(dataset_dir)
+            if shall_plot:
+                dataset_dir = os.path.join(algo_dir, dataset)
+                os.mkdir(dataset_dir)
 
             for training_size in conf.get("training_size", [0.40]):
                 data = dts.load_dataset(dataset, training_size)
@@ -98,7 +101,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                     else:
                         results.append((algorithm, dataset, result_tups))
 
-                    if conf.get("plot_data", False):
+                    if shall_plot:
                         output_path = os.path.join(dataset_dir, "%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
                         learn.plot_results(output_path, dataset, training_size, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
         if output == "pdf":
