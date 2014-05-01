@@ -1,3 +1,5 @@
+import matplotlib as mpl
+mpl.use('Agg')
 from metrics import Metrics
 from itertools import product
 from datasets import Datasets
