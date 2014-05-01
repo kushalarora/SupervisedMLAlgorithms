@@ -36,6 +36,7 @@ class BaseMLP(BaseEstimator):
         self.loss = loss
         self.batch_size = batch_size
         self.verbose = verbose
+        self.output_layer = output_layer
 
         # check compatibility of loss and output layer:
         if output_layer=='softmax' and loss!='cross_entropy':
