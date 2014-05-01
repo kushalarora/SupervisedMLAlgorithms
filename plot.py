@@ -24,7 +24,7 @@ def plot_data(filename, label, dataset, dimension=2, reduction='PCA'):
 def plot_2d(filename, label, X, Y, Z=None):
     assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
     h = 0.02
-    figure = pylab.figure(figsize=(10, 10))
+    figure = pylab.figure(figsize=(15, 10))
     cmap = pylab.cm.winter
     cmap.set_under("magenta")
     cmap.set_over("yellow")
@@ -42,7 +42,7 @@ def plot_2d(filename, label, X, Y, Z=None):
     pl.set_xticks(np.linspace(xx.min(), 0.5, xx.max(), endpoint=True))
     pl.set_yticks(np.linspace(xx.min(), 0.5, xx.max(), endpoint=True))
     pl.set_title(label)
-    figure.savefig(filename)
+    figure.savefig(filename, dpi=200)
 
 if __name__ == "__main__":
     plot_data("/tmp/test_plot", "Label:Iris", "iris")

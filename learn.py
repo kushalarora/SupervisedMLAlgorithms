@@ -123,14 +123,13 @@ class Learn:
 
         assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
         h = 0.02
-        figure = pl.figure(figsize=(10, 10))
+        figure = pl.figure(figsize=(30, 20))
         ax0 = pl.subplot(2, 1, 1)
 
         ax = pl.subplot(2, 1, 2)
         cm = pl.cm.RdBu
         cm_bright = ListedColormap(['#FF0000', '#0000FF'])
 
-        #ax0.scatter(X[:, 0], X[:, 1], c=y_train, cmap=cm, s=30)
 
         x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
         y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
@@ -151,13 +150,14 @@ class Learn:
         Z = Z.reshape(xx.shape)
 
         ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
+        ax0.contourf(xx, yy, Z, cmap=cm, alpha=.8)
 
 
         # Plot also the training points
-        #ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm, s=30)
+        ax0.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cm, s=30, alpha=0.8)
         # and testing points
-        ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm, s=50,
-                   alpha=0.6)
+        ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm, s=30,
+                   alpha=0.8)
 
         ax.set_xlim(xx.min(), xx.max())
         ax.set_ylim(yy.min(), yy.max())
