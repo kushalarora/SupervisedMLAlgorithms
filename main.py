@@ -100,8 +100,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
 
                     if conf.get("plot_data", False):
                         output_path = os.path.join(dataset_dir, "%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
-                        output_label = "%s-%s-size-%s" % (dataset, algorithm, training_size)
-                        learn.plot_results(output_path, output_label, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
+                        learn.plot_results(output_path, dataset, training_size, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
         if output == "pdf":
             generate_pdf(results)
         elif output == "dump_text":

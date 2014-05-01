@@ -26,6 +26,7 @@ class Learn:
         self.allowed_metrics = allowed_metrics
         self.metrics = Metrics(type_masks)
         self.algo = None
+        self.opt_parameters = None
         self.reduction = reduction
         for mask in type_masks:
             type = type | 1 << mask
@@ -93,8 +94,8 @@ class Learn:
         raise NotImplementedError
 
     def train(self, train_X, train_Y, print_cv_score=True):
-        opt_parameters = self._cross_validate(train_X, train_Y)
-        self.set_parameters(opt_parameters)
+        self.opt_parameters = self._cross_validate(train_X, train_Y)
+        self.set_parameters(self.opt_parameters)
         return self._train_routine(train_X, train_Y)
 
     def predict(self, test_data=[]):
@@ -109,17 +110,15 @@ class Learn:
             results.append((metric, metric_function(orig_Y, test_Y)))
         return results
 
-    def plot_results(self, filename, label, X_train, X_test, y_train, y_test):
+    def plot_results(self, filename, dataset, training_size, X_train, X_test, y_train, y_test):
         X = np.concatenate((X_train, X_test))
         Y = np.concatenate((y_train, y_test))
-        training_size = float(X_train.shape[0])/X.shape[0]
         X = getattr(reductions, self.reduction)(X, 2)
         (X_train, X_test, y_train, y_test) = train_test_split(X, Y, train_size=training_size, random_state=42)
 
         self.train(X_train, y_train)
         results = self.evaluate(X_test, y_test, metrics=['accuracy_score'])
         score = results[0][1]
-        print_accuracy_score(training_size, label, 'Plotting', score)
 
         assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
         h = 0.02
@@ -165,7 +164,13 @@ class Learn:
         ax0.set_xticks(np.linspace(x_min, x_max, 10))
         ax0.set_yticks(np.linspace(y_min, y_max, 10))
 
-        ax.set_title(label)
+        train_label = "%s-train-size-%d-%s-%s" % (dataset, training_size * 100, self.get_name(), ", ".join(["%s=%s" % (key, value) for key, value in self.opt_parameters.iteritems()]))
+        ax0.set_title(train_label, fontsize=20)
+
+        test_label = "%s-test-size-%d-%s-%s" % (dataset, training_size * 100, self.get_name(), ", ".join(["%s=%s" % (key, value) for key, value in self.opt_parameters.iteritems()]))
+        ax.set_title(test_label, fontsize=20)
+
+        print_accuracy_score(training_size, test_label, 'Plotting', score)
         ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'),
                   size=15, horizontalalignment='right')
         figure.savefig(filename)
