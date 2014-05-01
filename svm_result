@@ -1,0 +1,45 @@
+							
+cancer		training (10%)	testing(90%)			training (10%)	testing(90%)
+centralized	 training/validation	90/10			 training/validation	70/30	
+	linear	100.00%	96.12%		linear	96.25%	96.12%
+	polynomial =3	100.00%	96.28%		polynomial =3	97.50%	96.28%
+	polynomial =4	100.00%	95.96%		polynomial =4	97.50%	95.96%
+	polynomial =5	100.00%	95.96%		polynomial =5	97.50%	95.96%
+	polynomial =6	98.75%	94.67%		polynomial =6	97.50%	94.67%
+	rbf gamma = 1	67.50%	65.43%		rbf gamma = 1	67.50%	65.43%
+	sigmoid gamma = 1	67.50%	65.27%		sigmoid gamma = 1	67.50%	65.27%
+							
+							
+ocr		training (50%)	testing(50%)			training (50%)	testing(50%)
+centralized	 training/validation	90/10			 training/validation	70/30	
+	linear	95.87%	95.83%		linear	96.69%	95.83%
+	polynomial =3	94.21%	92.86%		polynomial =3	95.04%	92.86%
+	polynomial =4	93.94%	92.26%		polynomial =4	95.32%	92.26%
+	polynomial =5	94.21%	91.96%		polynomial =5	95.32%	91.96%
+	polynomial =6	93.94%	91.96%		polynomial =6	95.59%	91.96%
+	rbf gamma = 1	89.26%	82.44%		rbf gamma = 1	88.98%	82.44%
+	sigmoid gamma = 1	66.94%	63.99%		sigmoid gamma = 1	66.94%	63.99%
+							
+							
+							
+							
+ocr		training (10%)	testing(90%)			training (10%)	testing(90%)
+centralized	 training/validation	90/10			 training/validation	70/30	
+	linear	95.33%	96.39%		linear	94.42%	96.06%
+	polynomial =3	96.19%	97.3027		polynomial =3	96.34%	96.93%
+	polynomial =4	96.54%	97.18%		polynomial =4	96.68%	96.87%
+	polynomial =5	96.37%	97.10%		polynomial =5	96.68%	96.69%
+	polynomial =6	96.37%	96.79%		polynomial =6	95.99%	96.37%
+	rbf gamma = 1	11.42%	9.84%		rbf gamma = 1	16.23%	9.83%
+	sigmoid gamma = 1	9.84%	9.84%		sigmoid gamma = 1	12.04%	9.83%
+							
+							
+ocr		training (50%)	testing(50%)			training (50%)	testing(50%)
+centralized	 training/validation	90/10			 training/validation	70/30	
+	linear	97.44%	97.26%		linear	97.01%	97.26%
+	polynomial =3	98.51%	98.72%		polynomial =3	98.54%	98.72%
+	polynomial =4	98.51%	98.93%		polynomial =4	98.51%	98.93%
+	polynomial =5	98.58%	98.93%		polynomial =5	98.36%	98.93%
+	polynomial =6	98.40%	98.97%		polynomial =6	98.19%	98.97%
+	rbf gamma = 1	11.06%	9.29%		rbf gamma = 1	11.06%	9.29%
+	sigmoid gamma = 1	11.06%	9.29%		sigmoid gamma = 1	11.06%	9.29%
