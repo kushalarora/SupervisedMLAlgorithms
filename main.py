@@ -54,7 +54,8 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         os.mkdir(tmp_plot_dir)
 
         for dataset in datasets:
-            plot_data(os.path.join(tmp_plot_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
+            # plot_data(os.path.join(tmp_plot_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
+            pass
 
 
     for algorithm in algorithms:

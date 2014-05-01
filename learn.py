@@ -3,8 +3,8 @@ from itertools import product
 from datasets import Datasets
 from constants import *
 from sklearn import cross_validation
-from print_score import print_cv_scores
-from reductions import PCA, LinearEmbedding
+from print_score import print_cv_scores, print_accuracy_score
+import reductions
 import logging
 import pylab as pl
 import numpy as np
@@ -17,13 +17,14 @@ class Learn:
         return self.type & mask
 
     def __init__(self, parameters={}, cross_validate=False,
-                    allowed_metrics=[], type_masks=[]):
+                    allowed_metrics=[], type_masks=[], reduction='PCA'):
         type = 1
         self.parameters = parameters
         self.cross_validate = cross_validate
         self.allowed_metrics = allowed_metrics
         self.metrics = Metrics(type_masks)
         self.algo = None
+        self.reduction = reduction
         for mask in type_masks:
             type = type | 1 << mask
         self.type = type
@@ -32,7 +33,7 @@ class Learn:
     def set_parameters(self, parameters={}):
         pass
 
-    def _cross_validate(self, train_X, train_Y, print_scores=True):
+    def _cross_validate(self, train_X, train_Y, print_scores=False):
         """
         """
         params = self.parameters
@@ -109,20 +110,25 @@ class Learn:
     def plot_results(self, filename, label, X_train, X_test, y_train, y_test):
         X = np.concatenate((X_train, X_test))
         Y = np.concatenate((y_train, y_test))
-        training_size = X_train.shape[0] * 100/X.shape[0]
-        X = LinearEmbedding(X, 2)
+        training_size = float(X_train.shape[0])/X.shape[0]
+        X = getattr(reductions, self.reduction)(X, 2)
         (X_train, X_test, y_train, y_test) = train_test_split(X, Y, train_size=training_size, random_state=42)
 
         self.train(X_train, y_train)
-        score = self.algo.score(X_test, y_test)
-
+        results = self.evaluate(X_test, y_test, metrics=['accuracy_score'])
+        score = results[0][1]
+        print_accuracy_score(training_size, label, 'Plotting', score)
 
         assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
         h = 0.02
         figure = pl.figure(figsize=(10, 10))
-        ax = pl.subplot(1, 1, 1)
+        ax0 = pl.subplot(2, 1, 1)
+
+        ax = pl.subplot(2, 1, 2)
         cm = pl.cm.RdBu
         cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+
+        #ax0.scatter(X[:, 0], X[:, 1], c=y_train, cmap=cm, s=30)
 
         x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
         y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5

@@ -5,6 +5,7 @@ def PCA(X, dimensions):
     return decomposition.PCA(n_components=dimensions ).fit_transform(X)
 
 def LinearEmbedding(X, dimension):
-    return manifold.LocallyLinearEmbedding(3, dimension, method='standard').fit_transform(X)
+    n = int(X.shape[0] * 0.01)
+    return manifold.Isomap(20, dimension).fit_transform(X)
 
 
