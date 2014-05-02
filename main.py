@@ -8,7 +8,7 @@ import sys
 import importlib
 import print_score
 import shutil
-from plot import plot_data
+from plot import plot_data, plot_metric
 dt = Datasets()
 def generate_pdf(metric_tuples):
     pass
@@ -21,7 +21,7 @@ def print_results(training_size, algorithm, dataset, metric_tuples):
     #print "For Dataset::\t%s\n" % dataset
         for met_tup in metric_tuples:
             func = getattr(print_score, "print_%s" % met_tup[0])
-            func(training_size, algorithm, dataset, met_tup[1])
+            func(training_size, algorithm, dataset, met_tup[2])
 
 def _get_algorithm_class(algorithm_name):
     module = importlib.import_module("%s" % algorithm_name)
@@ -72,6 +72,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
             logging.error("Algorithm %s not found in conf file" % algorithm)
             sys.exit(0)
 
+        algo_conf['name'] = algorithm
         learn_class = _get_algorithm_class(algorithm)
         learn = learn_class(**algo_conf)
         learn._set_cross_validation(conf.get("cv_method", None), conf.get("cv_metric", None), conf.get("cv_params", None))
@@ -80,12 +81,20 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
             if dataset not in conf["datasets"]:
                 logging.error("Dataset %s not found" % dataset)
                 sys.exit(0)
+
+            cv_dir = None
             if shall_plot:
                 dataset_dir = os.path.join(algo_dir, dataset)
                 os.mkdir(dataset_dir)
 
+                if algo_conf.get("cross_validate", True):
+                    cv_dir = os.path.join(dataset_dir, "cv")
+                    os.mkdir(cv_dir)
+
             for training_size in conf.get("training_size", [0.40]):
                 data = dts.load_dataset(dataset, training_size)
+
+                learn.set_dataset(dataset, training_size*100, cv_dir)
                 if learn.check_type(data["type"]):
                     eval_metrics = []
                     if metrics:
@@ -102,8 +111,14 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                         results.append((algorithm, dataset, result_tups))
 
                     if shall_plot:
-                        output_path = os.path.join(dataset_dir, "%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
-                        learn.plot_results(output_path, dataset, training_size, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
+                        decision_plot_path = os.path.join(dataset_dir, "decision-%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
+                        learn.plot_results(decision_plot_path, dataset, training_size, data['x_train'], data['x_test'], data['y_train'], data['y_test'])
+
+                        for metric, y_test, score in result_tups:
+                            metric_plot_path = os.path.join(dataset_dir, "metric-%s-%s_%s_size_%d.png" % (metric, dataset, algorithm, training_size * 100))
+                            plot_metric(metric_plot_path, data['type'], y_test, data['y_test'], dataset, algorithm, training_size * 100)
+    else:
+
         if output == "pdf":
             generate_pdf(results)
         elif output == "dump_text":

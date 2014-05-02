@@ -8,8 +8,9 @@ def print_precision_recall_fscore(algorithm, dataset, score):
     pass
     #print score).format('centered')
 
-def print_cv_scores(cv_results):
+def print_cv_scores(algorithm, dataset, training_size, cv_results):
     table = PrettyTable(["parameters", "metric", "mean", "std"])
+    print "Algorithm: %s, Dataset: %s, Training Size: %s" % (algorithm, dataset, training_size)
     for result in cv_results:
-        table.add_row(result)
+        table.add_row(result[:-1])
     print table

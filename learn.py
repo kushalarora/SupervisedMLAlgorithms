@@ -12,15 +12,17 @@ import pylab as pl
 import numpy as np
 from matplotlib.colors import ListedColormap
 from sklearn.cross_validation import train_test_split
+import plot
 
 
 class Learn:
     def check_type(self, mask):
         return self.type & mask
 
-    def __init__(self, parameters={}, cross_validate=False,
+    def __init__(self, name, parameters={}, cross_validate=False,
                     allowed_metrics=[], type_masks=[], reduction='PCA'):
         type = 1
+        self.cv_dir = None
         self.parameters = parameters
         self.cross_validate = cross_validate
         self.allowed_metrics = allowed_metrics
@@ -28,6 +30,9 @@ class Learn:
         self.algo = None
         self.opt_parameters = None
         self.reduction = reduction
+        self.dataset = None
+        self.training_size = 0.0
+        self.name = name
         for mask in type_masks:
             type = type | 1 << mask
         self.type = type
@@ -36,7 +41,7 @@ class Learn:
     def set_parameters(self, parameters={}):
         pass
 
-    def _cross_validate(self, train_X, train_Y, print_scores=False):
+    def _cross_validate(self, train_X, train_Y, print_scores=False, plot_cv=True):
         """
         """
         params = self.parameters
@@ -74,9 +79,13 @@ class Learn:
                                             train_X, train_Y,
                                             cv=self.cv_method(len(train_Y), *self.cv_params),
                                             scoring=self.cv_metric)
-            cv_results.append((tup, self.cv_metric, scores.mean(), scores.std()))
+            cv_results.append((tup, self.cv_metric, scores.mean(), scores.std(), scores))
         if print_scores:
-            print_cv_scores(cv_results)
+            print_cv_scores(self.get_name(), self.dataset, self.traiing_size, cv_results)
+
+        if plot_cv:
+            plot.plot_cv(self.get_name(), self.dataset, self.training_size, cv_results, self.cv_dir)
+
         max_tup = max(cv_results, key=lambda x:x[2])
         opt_parameters = dict(max_tup[0])
         logging.info("Choosing following parameters after validation %s" % opt_parameters)
@@ -93,6 +102,11 @@ class Learn:
     def _train_routine(self, train_X, train_Y):
         raise NotImplementedError
 
+    def set_dataset(self, dataset, training_size, cv_dir=None):
+        self.dataset = dataset
+        self.training_size = training_size
+        self.cv_dir = cv_dir
+
     def train(self, train_X, train_Y, print_cv_score=True):
         self.opt_parameters = self._cross_validate(train_X, train_Y)
         self.set_parameters(self.opt_parameters)
@@ -107,7 +121,7 @@ class Learn:
         for metric in metrics:
             assert metric in self.allowed_metrics, "%s not a valid metric for %s" % (metric, self.__class__.__name__)
             metric_function = getattr(self.metrics, metric)
-            results.append((metric, metric_function(orig_Y, test_Y)))
+            results.append((metric, test_Y, metric_function(orig_Y, test_Y)))
         return results
 
     def plot_results(self, filename, dataset, training_size, X_train, X_test, y_train, y_test):
@@ -118,7 +132,7 @@ class Learn:
 
         self.train(X_train, y_train)
         results = self.evaluate(X_test, y_test, metrics=['accuracy_score'])
-        score = results[0][1]
+        score = results[0][2]
 
         assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
         h = 0.02
@@ -176,4 +190,5 @@ class Learn:
         figure.savefig(filename)
 
     def get_name(self):
-        return self.__class__.__name__
+        return self.name
+

@@ -13,7 +13,7 @@ class Datasets:
             'higgs': 'HIGGS.csv'
             }
 
-    def __init__(self, training_size=0.40, dataset_dirs={
+    def __init__(self, training_size=0.40,cv_dir="../plot", dataset_dirs={
                             'ocr_test': '../OCR',
                             'ocr_train': '../OCR',
                             'breast_cancer': '../Wisconsin',
@@ -21,6 +21,7 @@ class Datasets:
                                     }):
         self.dataset_dirs = dataset_dirs
         self.train_size = training_size
+        self.cv_dir = cv_dir
 
     def _load_file(self, dataset=None, path=None):
         assert dataset, "No dataset specified"
