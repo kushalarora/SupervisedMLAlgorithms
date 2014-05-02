@@ -1,5 +1,5 @@
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import numpy as np
 import pylab
 import reductions
@@ -87,6 +87,18 @@ def plot_cv(algorithm, dataset, training_size, cv_results, cv_dir):
     ax.set_zlabel('Z')
 
     pylab.show()
+
+
+def plot_training_results(filename, train_sizes, scores):
+    width = 7
+    fig = pylab.figure()
+    ax = pylab.subplot(111)
+    ax.bar(train_sizes, scores, width, color='b')
+    ax.set_ylabel('Scores')
+    ax.set_xticks(train_sizes)
+    ax.set_title('Accuracy vs Training Size')
+    fig.show()
+    fig.savefig(filename)
 
 if __name__ == "__main__":
     plot_data("/tmp/test_plot", "Label:Iris", "iris")

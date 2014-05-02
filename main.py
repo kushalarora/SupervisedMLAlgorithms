@@ -8,7 +8,7 @@ import sys
 import importlib
 import print_score
 import shutil
-from plot import plot_data, plot_metric
+from plot import plot_data, plot_metric, plot_training_results
 dt = Datasets()
 def generate_pdf(metric_tuples):
     pass
@@ -91,7 +91,9 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                     cv_dir = os.path.join(dataset_dir, "cv")
                     os.mkdir(cv_dir)
 
-            for training_size in conf.get("training_size", [0.40]):
+            training_sizes = conf.get("training_size", [0.40])
+            scores = []
+            for training_size in training_sizes:
                 data = dts.load_dataset(dataset, training_size)
 
                 learn.set_dataset(dataset, training_size*100, cv_dir)
@@ -117,7 +119,10 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                         for metric, y_test, score in result_tups:
                             metric_plot_path = os.path.join(dataset_dir, "metric-%s-%s_%s_size_%d.png" % (metric, dataset, algorithm, training_size * 100))
                             plot_metric(metric_plot_path, data['type'], y_test, data['y_test'], dataset, algorithm, training_size * 100)
-    else:
+                    scores.append(result_tups[0][2])
+            if shall_plot:
+                train_plot_path = os.path.join(dataset_dir, "train_vs_acc-%s_%s.png" % (algorithm, dataset))
+                plot_training_results(train_plot_path, [train_size * 100 for train_size in training_sizes], scores)
 
         if output == "pdf":
             generate_pdf(results)
