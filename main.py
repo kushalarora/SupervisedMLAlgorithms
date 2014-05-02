@@ -9,12 +9,25 @@ import importlib
 import print_score
 import shutil
 from plot import plot_data, plot_metric, plot_training_results
+import tabulate
 dt = Datasets()
 def generate_pdf(metric_tuples):
     pass
 
-def dump_results(metric_tuples):
-    pass
+def dump_results(algorithm, metric_tuples):
+    file = open(os.path.join("../dumps", "%s.txt" % algorithm), 'w+')
+    headers = ["Algorithm", "Dataset", "Training Size", "Metric", "Score"]
+    table = []
+    for tup in metric_tuples:
+        (algorithm, dataset, training_size, metric, score) = (tup[0], tup[1], tup[2], tup[3][0][0], tup[3][0][2])
+        algorithm = algorithm.replace("_", " ").title()
+        dataset = dataset.replace("_", " ").title()
+        metric = metric.replace("_", " ").title()
+        table.append([algorithm, dataset,  training_size, metric, score])
+    file.write("\n%s\n" % tabulate.tabulate(table, headers, tablefmt='latex'))
+    file.close()
+
+
 
 def print_results(training_size, algorithm, dataset, metric_tuples):
     #print "\nFor Algorithm::\t%s" % algorithm
@@ -48,7 +61,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
     if shall_plot:
         plot_dir = conf.get("plot_dir", "../plots")
 
-        tmp_plot_dir = "/tmp/plots"
+        tmp_plot_dir = "../plots_1"
         if os.path.exists(tmp_plot_dir):
             shutil.rmtree(tmp_plot_dir)
 
@@ -59,6 +72,8 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         for dataset in datasets:
             plot_data(os.path.join(orig_data_dir, "%s-orig.png"  % dataset), "%s-orig" % dataset, dataset)
 
+    if output == 'dump_text' and not os.path.exists("../dumps"):
+        os.mkdir("../dumps")
 
     for algorithm in algorithms:
 
@@ -107,10 +122,8 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
                     learn.train(data["x_train"], data["y_train"])
                     result_tups = learn.evaluate(data["x_test"], data["y_test"], eval_metrics)
 
-                    if output == "print":
-                        print_results(training_size, algorithm, dataset, result_tups)
-                    else:
-                        results.append((algorithm, dataset, result_tups))
+                    print_results(training_size, algorithm, dataset, result_tups)
+                    results.append((algorithm, dataset, training_size, result_tups))
 
                     if shall_plot:
                         decision_plot_path = os.path.join(dataset_dir, "decision-%s_%s_size_%d.png" % (dataset, algorithm, training_size * 100))
@@ -127,7 +140,7 @@ def run_algorithms(algorithms, datasets, metrics, output, conf):
         if output == "pdf":
             generate_pdf(results)
         elif output == "dump_text":
-            dump_results(results)
+            dump_results(algorithm, results)
     if conf.get("plot_data", False):
         shutil.rmtree(plot_dir)
         shutil.move(tmp_plot_dir, plot_dir)

@@ -61,7 +61,7 @@
             "type_masks": [1, 5]
         }
     },
-    "datasets": ["iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
+    "datasets": ["higgs", "iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
     "cv_method": "KFold",
     "cv_metric": "accuracy",
     "cv_params": [3],

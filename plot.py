@@ -61,7 +61,7 @@ def plot_confusion_matrix(filename, y_test, y_pred, label):
     pylab.savefig(filename)
 
 def plot_metric(filename, type, y_test, y_pred, dataset, algorithm, training_size):
-    label = "confusion_matrix-%s-%s-size-%d" % (dataset, algorithm, training_size)
+    label = "%s-%s-size-%d" % (dataset, algorithm, training_size)
     plot_confusion_matrix(filename, y_test, y_pred, label)
 
 

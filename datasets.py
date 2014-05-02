@@ -4,6 +4,7 @@ from math import floor
 from sklearn.datasets import load_iris, load_digits
 from constants import *
 import os
+import logging
 class Datasets:
     AVAILABLE_DATA = ['ocr_test', 'ocr_train', 'breast_cancer', 'higgs', 'iris', 'digits']
     DATA_FILES = {
