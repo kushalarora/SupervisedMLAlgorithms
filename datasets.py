@@ -113,7 +113,7 @@ class Datasets:
 
         return self._build_output(BINARY_DATA,x_matrix, y_vector, train_size)
 
-    def load_higgs(self, train_size=0.3, percentage_data=0.3):
+    def load_higgs(self, train_size=0.3, percentage=0.3):
         """ Load HIGGS dataset
             >>> dt = Datasets()
             >>> dt.load_higgs(percentage=0.3)
