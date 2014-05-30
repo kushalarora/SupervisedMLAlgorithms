@@ -4,51 +4,75 @@ import numpy as np
 import pylab
 import reductions
 from matplotlib.colors import ListedColormap
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 from datasets import Datasets
 from sklearn.preprocessing import scale
 from sklearn.metrics import confusion_matrix
-from mpl_toolkits.mplot3d import Axes3D
 from constants import *
 import os
 
-dts = Datasets(0)
+def plot_histogram(X_data, y_data, label, bins=None, filename=None):
 
-def plot_data(filename, label, dataset, dimension=2, reduction='PCA'):
-    data = dts.load_dataset(dataset, train_size=0)
-    (X, Y) = (data['x_test'], data['y_test'])
+    dim = min(4, X_data.shape[1])
 
-    X = scale(X)
-    # Reduce the dimensionality to the given value
-    red_func = getattr(reductions, reduction)
-    X = red_func(X, dimension)
+    X_red = reductions.PCA(X_data, dim)
 
-    if dimension == 2:
-        plot_2d(filename, label, X, Y)
+    classes = np.unique(y_data)
+    x_class = {}
 
-def plot_2d(filename, label, X, Y, Z=None):
-    assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"
-    h = 0.02
-    figure = pylab.figure(figsize=(15, 10))
+    for c in classes:
+        x_class[c] = []
+
+    for i in xrange(0, len(y_data)):
+        x_class[y_data[i]].append(tuple(X_red[i]))
+
+    for c in classes:
+        x_class[c] = np.array(x_class[c])
+
+    fig = plt.figure()
+
+    for i in xrange(0, dim):
+        data = []
+        data.append(X_red[:, i])
+        for c in classes:
+            data.append(tuple(x_class[c][:, i]))
+
+        ax = pylab.subplot(dim, 1, i + 1)
+        ax.set_title("%s-%d" % (label, i))
+        ax.hist(data, histtype='bar', fill=True)
+        ax.legend()
+    if filename:
+        fig.savefig(filename)
+    else:
+        fig.show()
+
+def plot_scatter(X, Y, label, filename=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
     cmap = pylab.cm.winter
     cmap.set_under("magenta")
     cmap.set_over("yellow")
-
+    X = reductions.PCA(X, 3)
     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
-                                  np.arange(y_min, y_max, h))
+    z_min, z_maz = X[:, 2].min() - 5, X[:, 2].max() + .5
 
-    pl = pylab.subplot(1, 1, 1)
     # Plot the training points
-    pl.scatter(X[:, 0], X[:, 1], c=Y, s=60, cmap=cmap)
-    pl.set_xlim(xx.min(), xx.max())
-    pl.set_ylim(yy.min(), yy.max())
-    pl.set_xticks(np.linspace(x_min, x_max, 10))
-    pl.set_yticks(np.linspace(y_min, y_max, 10))
-    pl.set_title(label)
-    figure.savefig(filename)
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(y_min, y_max)
+    ax.set_xticks(np.linspace(x_min, x_max, 10))
+    ax.set_yticks(np.linspace(y_min, y_max, 10))
+    ax.set_title(label)
+    ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=Y, s=60, cmap=cmap)
+    ax.legend()
+    if filename:
+        fig.savefig(filename)
+    else:
+        fig.show()
 
-def plot_confusion_matrix(filename, y_test, y_pred, label):
+
+def plot_confusion_matrix(y_test, y_pred, label, filename=None):
     cm = confusion_matrix(y_test, y_pred)
 
     pylab.subplot(111)
@@ -58,11 +82,14 @@ def plot_confusion_matrix(filename, y_test, y_pred, label):
     pylab.colorbar()
     pylab.ylabel('True label', fontsize=20)
     pylab.xlabel('Predicted label', fontsize=20)
-    pylab.savefig(filename)
+    if filename:
+        pylab.savefig(filename)
+    else:
+        pylab.figshow()
 
-def plot_metric(filename, type, y_test, y_pred, dataset, algorithm, training_size):
+def plot_metric(type, y_test, y_pred, dataset, algorithm, training_size, filename=None):
     label = "confusion_matrix-%s-%s-size-%d" % (dataset, algorithm, training_size)
-    plot_confusion_matrix(filename, y_test, y_pred, label)
+    plot_confusion_matrix(y_test, y_pred, label, filename)
 
 
 def plot_cv(algorithm, dataset, training_size, cv_results, cv_dir):
@@ -89,7 +116,7 @@ def plot_cv(algorithm, dataset, training_size, cv_results, cv_dir):
     pylab.show()
 
 
-def plot_training_results(filename, train_sizes, scores):
+def plot_training_results(train_sizes, scores, filename=None):
     width = 7
     fig = pylab.figure()
     ax = pylab.subplot(111)
@@ -99,6 +126,20 @@ def plot_training_results(filename, train_sizes, scores):
     ax.set_title('Accuracy vs Training Size')
     fig.show()
     fig.savefig(filename)
+
+
+def plot_PCA_variance(f_var_ratio, label, filename=None):
+    fig = pylab.figure()
+    ax = pylab.subplot(111)
+    ax.plot(np.vstack((np.array([1]) + f_var_ratio)))
+    ax.set_ylabel('variance loss')
+    ax.set_xlabel('# of features retained')
+    ax.set_xticks(xrange(0, len(f_var_ratio) + 1))
+    ax.set_yticks(xrange(0, 100))
+    if filename:
+        fig.savefig(filename)
+    else:
+        fig.show()
 
 if __name__ == "__main__":
     plot_data("/tmp/test_plot", "Label:Iris", "iris")

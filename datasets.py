@@ -3,21 +3,28 @@ from sklearn.cross_validation import train_test_split
 from math import floor
 from sklearn.datasets import load_iris, load_digits
 from constants import *
+import logging
 import os
 class Datasets:
-    AVAILABLE_DATA = ['ocr_test', 'ocr_train', 'breast_cancer', 'higgs', 'iris', 'digits']
+    AVAILABLE_DATA = ['ocr_test', 'ocr_train', 'breast_cancer', 'higgs', 'iris', 'digits', 'london']
     DATA_FILES = {
             'ocr_test': 'optdigits.tes',
             'ocr_train': 'optdigits.tra',
             'breast_cancer': 'breast-cancer-wisconsin.data',
-            'higgs': 'HIGGS.csv'
+            'higgs': 'HIGGS.csv',
+            'london_test': 'test.csv',
+            'london_train': 'train.csv',
+            'london_trainLabel': 'trainLabels.csv'
             }
 
     def __init__(self, training_size=0.40,cv_dir="../plot", dataset_dirs={
                             'ocr_test': '../OCR',
                             'ocr_train': '../OCR',
                             'breast_cancer': '../Wisconsin',
-                            'higgs': '../Higgs'
+                            'higgs': '../Higgs',
+                            'london_test': '../London',
+                            'london_train': '../London',
+                            'london_trainLabel': '../London'
                                     }):
         self.dataset_dirs = dataset_dirs
         self.train_size = training_size
@@ -45,7 +52,7 @@ class Datasets:
         assert dataset in self.AVAILABLE_DATA, "Dataset: %s not known" % dataset
         return getattr(self, "load_%s" % dataset)(train_size)
 
-    def _build_output(self, type, X, Y, train_size=None):
+    def _build_output(self, type, X, Y, train_size=None, predict_on=None):
         train_size = train_size if train_size != None else self.train_size
         (x_train, x_test, y_train, y_test) = train_test_split(np.array(X),
                                                     np.array(Y),
@@ -56,7 +63,8 @@ class Datasets:
                 'x_train': x_train,
                 'x_test': x_test,
                 'y_train': y_train,
-                'y_test': y_test
+                'y_test': y_test,
+                'predict_on': predict_on,
                 }
         return output
 
@@ -154,3 +162,23 @@ class Datasets:
         x = load_digits()
         return self._build_output(MULTICLASS_DATA, x.data, x.target, train_size)
 
+    def load_london(self, train_size=None):
+        train_X_file = self._load_file('london_train')
+        test_X_file = self._load_file('london_test')
+        train_Y_file = self._load_file('london_trainLabel')
+
+        train_X = []
+        test_X = []
+        train_Y = []
+        for (X, file) in [(train_X, train_X_file), (test_X, test_X_file)]:
+            for line in file:
+               X.append(tuple([float(value) for value in line.strip().split(',')]))
+
+        for line in train_Y_file:
+            train_Y.append(int(line.strip()))
+
+        self._close_file(train_X_file)
+        self._close_file(train_Y_file)
+        self._close_file(test_X_file)
+
+        return self._build_output(BINARY_CLASSIFIER, train_X, train_Y, train_size, test_X)

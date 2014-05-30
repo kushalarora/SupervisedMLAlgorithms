@@ -22,7 +22,6 @@ class Learn:
     def __init__(self, name, parameters={}, cross_validate=False,
                     allowed_metrics=[], type_masks=[], reduction='PCA'):
         type = 1
-        self.cv_dir = None
         self.parameters = parameters
         self.cross_validate = cross_validate
         self.allowed_metrics = allowed_metrics
@@ -37,11 +36,14 @@ class Learn:
             type = type | 1 << mask
         self.type = type
         self.cv = None
+        self.cv_params = [5]
+        self.cv_metric = 'accuracy'
+        self.cv_method = getattr(cross_validation, 'KFold')
 
     def set_parameters(self, parameters={}):
         pass
 
-    def _cross_validate(self, train_X, train_Y, print_scores=False, plot_cv=True):
+    def cross_validation(self, train_X, train_Y, print_scores=True):
         """
         """
         params = self.parameters
@@ -81,15 +83,12 @@ class Learn:
                                             scoring=self.cv_metric)
             cv_results.append((tup, self.cv_metric, scores.mean(), scores.std(), scores))
         if print_scores:
-            print_cv_scores(self.get_name(), self.dataset, self.traiing_size, cv_results)
-
-        if plot_cv:
-            plot.plot_cv(self.get_name(), self.dataset, self.training_size, cv_results, self.cv_dir)
-
+            print_cv_scores(self.get_name(), self.dataset, self.training_size, cv_results)
+        
         max_tup = max(cv_results, key=lambda x:x[2])
         opt_parameters = dict(max_tup[0])
-        logging.info("Choosing following parameters after validation %s" % opt_parameters)
-        return opt_parameters
+        print "Choosing following parameters after validation %s" % opt_parameters
+        self.set_parameters(opt_parameters)
 
 
     def _set_cross_validation(self, method_name='KFold', metric='accuracy', parameters=[5]):
@@ -102,22 +101,18 @@ class Learn:
     def _train_routine(self, train_X, train_Y):
         raise NotImplementedError
 
-    def set_dataset(self, dataset, training_size, cv_dir=None):
+    def set_dataset(self, dataset, training_size):
         self.dataset = dataset
         self.training_size = training_size
-        self.cv_dir = cv_dir
 
     def train(self, train_X, train_Y, print_cv_score=True):
-        self.opt_parameters = self._cross_validate(train_X, train_Y)
-        self.set_parameters(self.opt_parameters)
         return self._train_routine(train_X, train_Y)
 
     def predict(self, test_data=[]):
         raise NotImplementedError
 
-    def evaluate(self, test_data, orig_Y, metrics=[]):
+    def evaluate(self, test_Y, orig_Y, metrics=['accuracy_score']):
         results = []
-        test_Y = self.predict(test_data)
         for metric in metrics:
             assert metric in self.allowed_metrics, "%s not a valid metric for %s" % (metric, self.__class__.__name__)
             metric_function = getattr(self.metrics, metric)
@@ -128,10 +123,10 @@ class Learn:
         X = np.concatenate((X_train, X_test))
         Y = np.concatenate((y_train, y_test))
         X = getattr(reductions, self.reduction)(X, 2)
-        (X_train, X_test, y_train, y_test) = train_test_split(X, Y, train_size=training_size, random_state=42)
 
         self.train(X_train, y_train)
-        results = self.evaluate(X_test, y_test, metrics=['accuracy_score'])
+        result = self.predict(X_test)
+        results = self.evaluate(y_result, y_test, metrics=['accuracy_score'])
         score = results[0][2]
 
         assert X.shape[0] > 2, "Only two dimensional data allowed. Apply reduction to data first"

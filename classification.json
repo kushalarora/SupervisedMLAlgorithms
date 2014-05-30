@@ -1,6 +1,7 @@
 {
     "algorithms": {
         "k_nearest_neighbors": {
+            "name": "k_nearest_neighbors",
             "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "reduction": "LinearEmbedding",
@@ -11,6 +12,7 @@
             "type_masks": [1]
         },
         "random_forest":{
+            "name": "random_forest",
             "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "parameters": {
@@ -22,6 +24,7 @@
             "type_masks": [1]
         },
         "multilayer_perceptron":{
+            "name": "multilayer_perceptron",
             "cross_validate": false,
             "allowed_metrics": ["accuracy_score"],
             "reduction": "PCA",
@@ -32,6 +35,7 @@
             "type_masks": [1]
         },
         "ada_boost":{
+            "name": "ada_boost",
            "cross_validate": true,
            "allowed_metrics": ["accuracy_score"],
            "parameters": {
@@ -41,6 +45,7 @@
             "type_masks": [1]
          },
         "decision_tree":{
+            "name": "decision_tree",
             "cross_validate": true,
             "allowed_metrics": ["accuracy_score"],
             "reduction": "PCA",
@@ -51,6 +56,7 @@
             "type_masks": [1]
         },
         "support_vector_machine": {
+            "name": "support_vector_machine",
             "allowed_metrics": ["accuracy_score"],
             "reduction": "PCA",
             "cross_validate": true,
@@ -61,11 +67,13 @@
             "type_masks": [1, 5]
         }
     },
-    "datasets": ["iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
+    "datasets": ["london"],
     "cv_method": "KFold",
     "cv_metric": "accuracy",
     "cv_params": [3],
     "plot_dir": "../plots",
     "plot_data": true,
+    "save_plots": false,
+    "evaluate": true,
     "training_size": [0.10, 0.30, 0.50]
 }
