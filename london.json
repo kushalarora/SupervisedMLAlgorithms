@@ -61,20 +61,19 @@
             "reduction": "PCA",
             "cross_validate": true,
             "parameters": {
-                "C": [0.001, 1, 20, 1000],
-                "kernel": ["rbf", "poly", "sigmoid", "linear"],
+                "C": [0.001, .01, 0.1,  1, 10, 100, 1000],
+                "kernel": ["rbf", "poly"],
+                "degree": [2, 3, 5, 10]
             },
             "type_masks": [1, 5]
         }
     },
-
-    "datasets": ["higgs", "iris", "ocr_train", "ocr_test", "breast_cancer", "digits"],
+    "datasets": ["london"],
     "cv_method": "KFold",
     "cv_metric": "accuracy",
     "cv_params": [3],
     "plot_dir": "../plots",
     "plot_data": true,
-    "save_plots": false,
     "evaluate": true,
     "training_size": [0.10, 0.30, 0.50]
 }

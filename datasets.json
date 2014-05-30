@@ -1,0 +1,44 @@
+{
+    'ocr': {
+        'files': ['optdigits.tes', 'optdigits.tra']
+        , 'dir': '../OCR'
+        , 'delimiter': ','
+        , 'type': 'MULTICLASS_DATA'
+        , 'evaluate': true
+        , 'name': 'ocr'
+    }
+    , 'breast_cancer': {
+        'files': ['breast-cancer-wisconsin.data']
+        , 'dir': '../Wisconsin'
+        , 'delimiter': ','
+        , 'type': 'BINARY_DATA'
+        , 'evaluate': true
+        , 'name': 'breast_cancer'
+    }
+    , 'higgs': {
+        'files': ['HIGGS.csv']
+        , 'dir': '../Higgs'
+        , 'delimiter': ','
+        , 'type': 'MULTICLASS_DATA'
+        , 'evaluate': true
+        , 'name': 'higgs'
+    }
+    , 'london': {
+        'files': ['test.csv', 'train.csv', 'trainLabels.csv']
+        , 'dir': '../London'
+        , 'delimiter': ','
+        , 'type': 'BINARY_DATA'
+        , 'evaluate': false
+        , 'name': 'london'
+    }
+    , 'iris': {
+        'type': 'MULTICLASS_DATA'
+        , 'evaluate': true
+        , 'name': 'iris'
+    }
+    , 'digits': {
+        'type': 'MULTICLASS_DATA'
+        , 'evaluate': true
+        , 'name': 'digits'
+    }
+}
